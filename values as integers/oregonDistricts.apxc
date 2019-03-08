@@ -1,0 +1,85 @@
+public class oregonDistricts {
+
+    public static String oregonDistricts(
+            String address) {
+            system.debug('Address =' + address);    
+            return Results(address);
+    }
+
+    public static String Results(String address) {
+            Http httpProtocol = new Http();
+            // Create HTTP request to send.
+            HttpRequest request = new HttpRequest();
+            // Set the endpoint URL.
+             String endpoint = 'http://portal.opeuseiu.org/processes/google_civic_api_passthrough.php'
+                +'?secretkey=WckiMNSfVZuFIprzcMpDbcKEMcWDOcIm'
+                + '&address=' + address;
+    
+            request.setEndPoint(endpoint);
+            // Set the HTTP verb to GET.
+            request.setMethod('GET');
+            // Send the HTTP request and get the response.
+            // The response is in JSON format.
+            HttpResponse response = httpProtocol.send(request);
+            System.debug('----body---'+response.getBody());
+         
+    
+            // Parse JSON response to get all the field values.
+            JSONParser parser = JSON.createParser(response.getBody());
+            Integer congressionalDistrict  = 0;
+    		Integer  statehouseDistrict = 0;
+    		Integer statesenateDistrict = 0;
+        
+            String CD;
+            String HD;
+            String SD;
+            while (parser.nextToken() != null) {
+                if ((parser.getCurrentToken() == JSONToken.FIELD_NAME)) {
+                    if (parser.getText() == 'congressionaldistrictnum') {
+                        // Get the value.
+                        parser.nextToken();
+                        CD = parser.getText();
+                        If (CD == null)
+                     {
+                        congressionalDistrict = 0;
+                     }
+                     If (CD != null)
+                     {
+                         congressionalDistrict = Integer.valueOf(CD);
+                     }
+                        
+                    }
+                 if (parser.getText() == 'statehousedistrictnum') {
+                        // Get the value.
+                        parser.nextToken();
+                        HD = parser.getText();
+                     If (HD == null)
+                     {
+                        statehouseDistrict = 0;
+                     }
+                     If (HD != null)
+                     {
+                         statehouseDistrict = Integer.valueOf(HD);
+                     }
+                    }
+                   if (parser.getText() == 'statesenatedistrictnum') {
+                        // Get the value.
+                        parser.nextToken();
+                         SD = parser.getText();
+                        If (SD == null)
+                     {
+                        statesenateDistrict = 0;
+                     }
+                     If (SD != null)
+                     {
+                         statesenateDistrict = Integer.valueOf(SD);
+                     }
+                    }
+                }
+            }
+            system.debug('Address =' + address + ' Congressional  =' + congressionalDistrict + ' State House  =' + statehouseDistrict + ' State Senate  =' + statesenateDistrict);
+        	String result = CD + ', ' + HD + ', ' + SD;
+            system.debug(result);
+            return result;
+        }
+}

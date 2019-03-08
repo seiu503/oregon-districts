@@ -1,0 +1,29 @@
+trigger OregonDistricts on Contact (after update) {
+    
+
+    
+List<Contact>  updatedItems =  [SELECT  Id ,  MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE  Id  IN :trigger.new] ; 
+List<string> ids = new List<string>();
+ for ( Contact c  : updatedItems) { 
+
+     Contact oldContact = Trigger.oldMap.get(c.Id);
+     
+     //we could just use MailingAddress but breaking it out gives us some flexibility if we want to do more with this later
+     
+     Boolean streetSame = oldContact.MailingStreet == c.MailingStreet;
+     Boolean citySame = oldContact.MailingCity == c.MailingCity;
+     Boolean stateSame = oldContact.MailingState == c.MailingState;
+     Boolean zipSame = oldContact.MailingPostalCode == c.MailingPostalCode;
+     
+     if(!streetSame || !citySame || !stateSame || !zipSame)
+     {
+       c.District_Update_Date__c  = null;
+       c.Cong_District__c  = null;
+       c.OR_HD__c = null;
+       c.OR_SD__c = null;
+       update c;
+     }
+
+ }
+ 
+}

@@ -1,0 +1,30 @@
+global class calloregonDistricts {
+ @future(callout=true)
+   public static void getDistricts()
+   {
+       
+    
+List<Contact>  updateItems = [SELECT Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c = null OR OR_HD__c = null OR OR_SD__c = null)]; 
+ for ( Contact c  : updateItems) { 
+
+    String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
+                                                  + c.MailingCity + ' ' 
+                                                  + c.MailingState + ' ' 
+                                                  + c.MailingPostalCode, 'UTF-8');
+    oregonDistricts od = new oregonDistricts(
+			address);
+
+     
+     c.Cong_District__c = od.congressionalDistrict;
+     //c.OR_HD__c  = String.valueOf(od.statehouseDistrict);
+    // c.OR_SD__c = String.valueOf(od.statesenateDistrict);
+	 c.OR_HD__c  = od.statehouseDistrict;
+    c.OR_SD__c = od.statesenateDistrict;
+     c.District_Update_Date__c = system.now();
+     
+     
+ }
+       update updateItems;
+       
+   }
+}

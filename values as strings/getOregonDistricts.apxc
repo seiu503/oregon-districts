@@ -1,0 +1,7 @@
+global class getOregonDistricts implements Schedulable
+{
+	global void execute(SchedulableContext ctx)
+	{
+   		calloregonDistricts.getDistricts();
+	}
+}

@@ -1,0 +1,66 @@
+global class OregonDistrictsBatch implements Database.Batchable<sObject>, Database.AllowsCallouts, Database.Stateful{
+
+   // instance member to retain state across transactions
+    global Integer recordsProcessed = 0;
+	
+	
+
+	global Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator(
+            'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)'
+        );
+    }
+
+
+   global void execute(Database.BatchableContext BC, List<Contact> scope){
+       // process each batch of records
+		   for ( Contact c  : scope) { 
+
+				String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
+															  + c.MailingCity + ' ' 
+															  + c.MailingState + ' ' 
+															  + c.MailingPostalCode, 'UTF-8');
+				system.Debug('Address =' + address);
+               
+               oregonDistricts od = new oregonDistricts(
+							address);
+
+     
+     				c.Cong_District__c = od.congressionalDistrict;
+     				//c.OR_HD__c = String.valueOf(od.statehouseDistrict);
+     				//c.OR_SD__c = String.valueOf(od.statesenateDistrict);
+                    c.OR_HD__c = od.statehouseDistrict;
+     				c.OR_SD__c = od.statesenateDistrict;
+     				c.District_Update_Date__c = system.now();
+				
+				recordsProcessed = recordsProcessed + 1;
+		 
+			}
+					update scope;
+		   
+	}
+
+
+   global void finish(Database.BatchableContext BC){
+	   System.debug(recordsProcessed + ' records were processed.');
+	   
+   // Get the ID of the AsyncApexJob representing this batch job
+   // from Database.BatchableContext.
+   // Query the AsyncApexJob object to retrieve the current job's information.
+   AsyncApexJob a = [SELECT Id, Status, NumberOfErrors, JobItemsProcessed,
+      TotalJobItems, CreatedBy.Email
+      FROM AsyncApexJob WHERE Id =
+      :BC.getJobId()];
+   // Send an email to the Apex job's submitter notifying of job completion.
+   Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+   String[] toAddresses = new String[] {a.CreatedBy.Email};
+   mail.setToAddresses(toAddresses);
+   mail.setSubject('Apex Sharing Recalculation ' + a.Status);
+   mail.setPlainTextBody
+   ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
+   ' batches with '+ a.NumberOfErrors + ' failures.');
+   Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+	
+	}
+
+}

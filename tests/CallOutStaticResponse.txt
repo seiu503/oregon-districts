@@ -1,0 +1,1 @@
+{"civic_data":{"congressionaldistrictnum":"5","statehousedistrictnum":"20","statesenatedistrictnum":"10"}}
