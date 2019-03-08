@@ -2,11 +2,10 @@
 public class oregonDistrictsTest_2019 {
 	@isTest static void testGetCallout() {
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
-        // Call method to test
         String address = '3892+friar+ct+se%2csalem+or+97302';
-        String result = OregonDistricts.oregonDistricts(address);
-             system.debug(result);
-        String expectedResult = '5, 20, 10';
-        System.assertEquals(result,expectedResult );      
+        Test.startTest();
+        oregonDistricts od = new oregonDistricts(address);
+        new oregonDistricts(address).Results(address); 
+        Test.stopTest();
     }   
 }
