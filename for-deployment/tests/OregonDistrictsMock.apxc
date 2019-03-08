@@ -1,0 +1,12 @@
+@isTest
+global class OregonDistrictsMock implements HttpCalloutMock {
+    // Implement this interface method
+    global HTTPResponse respond(HTTPRequest request) {
+        // Create a fake response
+        HttpResponse response = new HttpResponse();
+        response.setHeader('Content-Type', 'application/json');
+        response.setBody('{"civic_data":{"congressionaldistrictnum":"5","statehousedistrictnum":"20","statesenatedistrictnum":"10"}}');
+        response.setStatusCode(200);
+        return response; 
+    }
+}

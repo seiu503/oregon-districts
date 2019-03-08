@@ -1,0 +1,7 @@
+global class OregonDistrictsJobScheduler {
+    global void OregonDistrictsJobScheduler() {}
+    public static void start(){
+        //Seconds Minutes Hours Day_of_month Month Day_of_week optional_year
+        System.schedule('Oregon Districts Update', '0 0 1-23 * * ?', new getOregonDistricts());
+    }
+}
