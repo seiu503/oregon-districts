@@ -1,0 +1,34 @@
+@isTest
+private class OregonDistrictsTriggerTest {
+    @isTest static void TestChangeAddress() {
+        // Test data setup
+        // Create a test contact with an address
+        Contact testContact = new Contact(
+                firstname='first', 
+                lastname='last', 
+                accountId='0016100001RyWhAAAV',
+                MailingStreet='3892 friar ct se',
+                MailingCity='Salem',
+                MailingState='OR',
+                MailingPostalCode='97302');
+        insert testContact;
+        // grab id for testing
+        id contactID = testContact.id;
+
+        Contact contactToUpdate = 
+            [SELECT MailingStreet FROM Contact WHERE id = :contactID];
+        // Update the mailing street.
+        contactToUpdate.MailingStreet = '1755 high st se';
+        
+        // Perform test
+        Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
+        Test.startTest();
+        // Make the update call.
+        update contactToUpdate;
+        Test.stopTest();
+        // Verify that after updating the District_Update_Date__c fieldfor this contact is cleared out.
+        Contact updatedContact = [SELECT id, District_Update_Date__c FROM Contact WHERE id = :contactID];
+        System.assertEquals(updatedContact.District_Update_Date__c, NULL);
+    }
+    
+}

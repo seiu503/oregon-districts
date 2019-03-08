@@ -20,7 +20,7 @@ private class OregonDistrictsBatchTest {
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
         Test.startTest();
         OregonDistrictsBatch odb = new OregonDistrictsBatch();
-        Database.executeBatch(odb,200);
+        Database.executeBatch(odb,100);
         Test.stopTest();
         // after the testing stops, assert records were updated properly
         // select first 10 records with a district update date populated
