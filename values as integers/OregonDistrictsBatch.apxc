@@ -2,10 +2,10 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
 
    // instance member to retain state across transactions
     global Integer recordsProcessed = 0;
-	
-	
+    
+    
 
-	global Database.QueryLocator start(Database.BatchableContext bc) {
+    global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(
             'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)'
         );
@@ -14,36 +14,35 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
 
    global void execute(Database.BatchableContext BC, List<Contact> scope){
        // process each batch of records
-		   for ( Contact c  : scope) { 
+           for ( Contact c  : scope) { 
 
-				String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
-															  + c.MailingCity + ' ' 
-															  + c.MailingState + ' ' 
-															  + c.MailingPostalCode, 'UTF-8');
-				system.Debug('Address =' + address);
+                String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
+                                                              + c.MailingCity + ' ' 
+                                                              + c.MailingState + ' ' 
+                                                              + c.MailingPostalCode, 'UTF-8');
+                system.Debug('Address =' + address);
                
                oregonDistricts od = new oregonDistricts(
-							address);
+                            address);
+               system.Debug(od);
 
      
-     				c.Cong_District__c = od.congressionalDistrict;
-     				//c.OR_HD__c = String.valueOf(od.statehouseDistrict);
-     				//c.OR_SD__c = String.valueOf(od.statesenateDistrict);
+                    c.Cong_District__c = od.congressionalDistrict;
                     c.OR_HD__c = od.statehouseDistrict;
-     				c.OR_SD__c = od.statesenateDistrict;
-     				c.District_Update_Date__c = system.now();
-				
-				recordsProcessed = recordsProcessed + 1;
-		 
-			}
-					update scope;
-		   
-	}
+                    c.OR_SD__c = od.statesenateDistrict;
+                    c.District_Update_Date__c = system.now();
+                
+                recordsProcessed = recordsProcessed + 1;
+         
+            }
+                    update scope;
+           
+    }
 
 
    global void finish(Database.BatchableContext BC){
-	   System.debug(recordsProcessed + ' records were processed.');
-	   
+       System.debug(recordsProcessed + ' records were processed.');
+       
    // Get the ID of the AsyncApexJob representing this batch job
    // from Database.BatchableContext.
    // Query the AsyncApexJob object to retrieve the current job's information.
@@ -60,7 +59,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
    ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
    ' batches with '+ a.NumberOfErrors + ' failures.');
    Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
-	
-	}
+    
+    }
 
 }

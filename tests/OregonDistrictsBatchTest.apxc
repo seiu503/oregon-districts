@@ -1,37 +1,38 @@
-@isTest 
-public class OregonDistrictsBatchTest
-{
-    static testMethod void testMethod1() 
-    {
-      
-	  List<Contact>  updateItems = [SELECT Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c = null OR OR_HD__c = null OR OR_SD__c = null) LIMIT 100]; 
- for ( Contact c  : updateItems) { 
-
-    String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
-                                                  + c.MailingCity + ' ' 
-                                                  + c.MailingState + ' ' 
-                                                  + c.MailingPostalCode, 'UTF-8');
-    oregonDistricts od = new oregonDistricts(
-			address);
-
-     
-     c.Cong_District__c = od.congressionalDistrict;
-     //c.OR_HD__c  = String.valueOf(od.statehouseDistrict);
-    // c.OR_SD__c = String.valueOf(od.statesenateDistrict);
-	 c.OR_HD__c  = od.statehouseDistrict;
-    c.OR_SD__c = od.statesenateDistrict;
-     c.District_Update_Date__c = system.now();
-     
-     
- }
-        
-       update updateItems;
-        
+@isTest
+private class OregonDistrictsBatchTest {
+    static testmethod void test() { 
+        List<Contact> contacts = new List<Contact>();
+        // insert 10 contacts with unknown employer and test address; these will be guaranteed to meet query criteria for queriedContacts List
+        for (Integer i=0;i<10;i++) {
+            contacts.add(new Contact(
+                firstname='first' + i, 
+                lastname='last' + i, 
+                accountId='0016100001RyWhAAAV',
+                MailingStreet='3892 friar ct se',
+                MailingCity='Salem',
+                MailingState='OR',
+                MailingPostalCode='97302'));
+        }
+        insert contacts;
+        String q =  'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)';
+        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)];
+        System.assert(queriedContacts.size() >0);
+        Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
         Test.startTest();
-
-            Database.executeBatch(new OregonDistrictsBatch(), 100);
-			
+        OregonDistrictsBatch odb = new OregonDistrictsBatch();
+        Database.executeBatch(odb,200);
         Test.stopTest();
+        // after the testing stops, assert records were updated properly
+        // select first 10 records with a district update date populated
+        List<Contact> listContact = [SELECT id, District_Update_Date__c, Cong_District__c, OR_HD__c, OR_SD__c FROM Contact WHERE District_Update_Date__c != NULL LIMIT 10];
+        // assert that 10 records were found
+        System.assertEquals(listContact.size(),10);   
+        // assert that each of the targeted fields was populated in each of the 10 test records                                                                                                                                                            
+        for(Contact contact : listContact){
+          System.assert(contact.Cong_District__c  != null);
+          System.assert(contact.OR_HD__c  != null);
+          System.assert(contact.OR_SD__c  != null);
+        }
     }
-	
+    
 }
