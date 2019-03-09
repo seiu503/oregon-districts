@@ -1,0 +1,10 @@
+@isTest
+private class getOregonDistrictsTest {
+    static testMethod void test() {        
+         test.starttest();
+         getOregonDistricts gOD = new getOregonDistricts();   
+         String CRON = '0 0 23 * * ?';        
+         system.schedule('Test Sched', CRON, gOD);
+         test.stopTest();
+    }
+}

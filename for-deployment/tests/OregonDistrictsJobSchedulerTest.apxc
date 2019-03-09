@@ -1,0 +1,9 @@
+@istest
+public with sharing class OregonDistrictsJobSchedulerTest {
+    static testmethod void testSample() {
+        Test.startTest();
+        OregonDistrictsJobScheduler ODJS = New OregonDistrictsJobScheduler();
+        OregonDistrictsJobScheduler.start();
+        Test.stopTest();
+    }
+}

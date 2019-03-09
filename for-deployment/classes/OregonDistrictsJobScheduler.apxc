@@ -1,7 +1,6 @@
 global class OregonDistrictsJobScheduler {
-    global void OregonDistrictsJobScheduler() {}
+    public static String CRON = '0 25 * * * ?';
     public static void start(){
-        //Seconds Minutes Hours Day_of_month Month Day_of_week optional_year
-        System.schedule('Oregon Districts Update', '0 0 1-23 * * ?', new getOregonDistricts());
+        String jobId = System.schedule('Oregon Districts Update' +System.now(), CRON, new getOregonDistricts());  
     }
 }
