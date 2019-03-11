@@ -7,7 +7,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(
-            'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)'
+            'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND Active_Worker__c = True AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null OR (OR Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))'
         );
     }
 
