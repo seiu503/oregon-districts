@@ -3,17 +3,19 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
    // instance member to retain state across transactions
     global Integer recordsProcessed = 0;
     
+    // errors stored here for passing to user email in finish method
+    Exception[] errors = new Exception[0];
     
+    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND Active_Worker__c = True AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null OR (Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
-        return Database.getQueryLocator(
-            'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND Active_Worker__c = True AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null OR (OR Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))'
-        );
+        return Database.getQueryLocator(q);
     }
 
 
    global void execute(Database.BatchableContext BC, List<Contact> scope){
        // process each batch of records
+       try {
            for ( Contact c  : scope) { 
 
                 String address = EncodingUtil.urlEncode(c.MailingStreet + ',' 
@@ -22,8 +24,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
                                                               + c.MailingPostalCode, 'UTF-8');
                 system.Debug('Address =' + address);
                
-               oregonDistricts od = new oregonDistricts(
-                            address);
+               oregonDistricts od = new oregonDistricts(address);
                system.Debug(od);
 
      
@@ -36,6 +37,9 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
          
             }
                     update scope;
+       } catch (Exception e) {
+           errors.add(e);
+       }
            
     }
 
@@ -50,7 +54,20 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
       TotalJobItems, CreatedBy.Email
       FROM AsyncApexJob WHERE Id =
       :BC.getJobId()];
-   // Send an email to the Apex job's submitter notifying of job completion.
+   // Send an email to the Apex job's submitter with list of errors, if any.
+   String msg='';
+   for (integer i =0; i<errors.size();i++) {
+        msg +='\n' +'Error: ' + errors[i];
+        }
+   if(!errors.isEmpty()) {
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setSubject('Errors occurred during batch process.');
+            String[] toAddresses = new String[] {a.CreatedBy.Email};
+            mail.setToAddresses(toAddresses);
+       mail.setPlainTextBody(msg);
+            Messaging.sendEmail(new Messaging.Email[] { mail });
+        }
+       // Send an email to the Apex job's submitter notifying of job completion.
    Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
    String[] toAddresses = new String[] {a.CreatedBy.Email};
    mail.setToAddresses(toAddresses);
