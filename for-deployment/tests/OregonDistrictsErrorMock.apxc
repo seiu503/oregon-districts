@@ -1,0 +1,12 @@
+@isTest
+global class OregonDistrictsErrorMock implements HttpCalloutMock {
+    // Implement this interface method
+    global HTTPResponse respond(HTTPRequest request) {
+        // Create a fake error response to test error condition
+        HttpResponse response = new HttpResponse();
+        response.setHeader('Content-Type', 'application/json');
+        response.setBody('{"returned_errors":[{"error":{"errors":[{"domain":"usageLimits","reason":"dailyLimitExceeded","message":"Daily Limit Exceeded. The quota will be reset at midnight Pacific Time (PT). You may monitor your quota usage and adjust limits in the API Console: https:\/\/console.developers.google.com\/apis\/api\/civicinfo.googleapis.com\/quotas?project=396276343578","extendedHelp":"https:\/\/console.developers.google.com\/apis\/api\/civicinfo.googleapis.com\/quotas?project=396276343578"}],"code":403,"message":"Daily Limit Exceeded. The quota will be reset at midnight Pacific Time (PT). You may monitor your quota usage and adjust limits in the API Console: https:\/\/console.developers.google.com\/apis\/api\/civicinfo.googleapis.com\/quotas?project=396276343578"}}]}');
+        response.setStatusCode(200);
+        return response; 
+    }
+}

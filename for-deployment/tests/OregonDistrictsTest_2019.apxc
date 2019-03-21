@@ -7,5 +7,22 @@ public class oregonDistrictsTest_2019 {
         oregonDistricts od = new oregonDistricts(address);
         new oregonDistricts(address).Results(address); 
         Test.stopTest();
+        System.assert(od.congressionalDistrict  != null);
+        System.assert(od.statehouseDistrict  != null);
+        System.assert(od.statesenateDistrict  != null);
     }   
+
+    @isTest static void testGetCalloutError() {
+        Test.setMock(HttpCalloutMock.class, new OregonDistrictsErrorMock());
+        String address = '3892+friar+ct+se%2csalem+or+97302';
+        Test.startTest();
+        oregonDistricts od = new oregonDistricts(address);
+        new oregonDistricts(address).Results(address); 
+        Test.stopTest();
+        System.assert(od.gApiPassthroughErrorMessage = 'dailyLimitExceeded')
+        System.assertEquals(od.apiLimitExceeded, true)
+        System.assertEquals(od.congressionalDistrict, null);
+        System.assertEquals(od.statehouseDistrict, null);
+        System.assertEquals(od.statesenateDistrict, null);
+    }
 }

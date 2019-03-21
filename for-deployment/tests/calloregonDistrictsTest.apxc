@@ -7,6 +7,7 @@ private class calloregonDistrictsTest {
             contacts.add(new Contact(
                 firstname='first' + i, 
                 lastname='last' + i, 
+                Active_Worker__c=true,
                 accountId='0016100001RyWhAAAV',
                 MailingStreet='3892 friar ct se',
                 MailingCity='Salem',
@@ -21,7 +22,7 @@ private class calloregonDistrictsTest {
         Test.stopTest();
         // after the testing stops, assert records were updated properly
         // select first 10 records with a district update date populated
-        List<Contact> listContact = [SELECT id, District_Update_Date__c, Cong_District__c, OR_HD__c, OR_SD__c FROM Contact WHERE District_Update_Date__c != NULL LIMIT 10];
+        List<Contact> listContact = [SELECT id, District_Update_Date__c, Cong_District__c, OR_HD__c, OR_SD__c FROM Contact WHERE District_Update_Date__c != null LIMIT 10];
         // assert that 10 records were found
         system.debug(listContact.size());
         System.assertEquals(listContact.size(),10);   

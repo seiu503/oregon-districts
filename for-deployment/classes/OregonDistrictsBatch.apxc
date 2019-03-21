@@ -5,8 +5,21 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
     
     // errors stored here for passing to user email in finish method
     Exception[] errors = new Exception[0];
+    global Boolean apiLimitExceeded = false;
     
-    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null OR (Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
+    // query requires oregon street address, active wkr w/PIN or CW record,
+    // and null in any one of the 4 fields populated by the callout.
+    // for now also including records with 0s in all district fields
+    // but can remove that once error handling for over API limits is implemented
+    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode '
+        q += 'FROM Contact WHERE MailingStreet != NULL AND '
+        q += 'MailingState=\'OR\' AND '
+        q += '(Active_Worker__c = TRUE AND '
+        q += '(L503_PIN__c <> NULL OR L503_PIN__c > 0) OR '
+        q += 'Has_CareWorks_Record__c = TRUE) AND '
+        q += '(District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL OR '
+        q += '(Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
+
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(q);
@@ -25,18 +38,22 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
                 system.Debug('Address =' + address);
                
                oregonDistricts od = new oregonDistricts(address);
-               system.Debug(od);
 
-     
+               if (od.apiLimitExceeded != true) {
                     c.Cong_District__c = od.congressionalDistrict;
                     c.OR_HD__c = od.statehouseDistrict;
                     c.OR_SD__c = od.statesenateDistrict;
                     c.District_Update_Date__c = system.now();
+               } else {
+                   apiLimitExceeded = true;
+                   errors.add('API limit exceeded');
+                   return;
+               }
                 
                 recordsProcessed = recordsProcessed + 1;
          
             }
-                    update scope;
+                update scope;
        } catch (Exception e) {
            errors.add(e);
        }

@@ -3,6 +3,8 @@ public class oregonDistricts {
     public Integer congressionalDistrict {get;set;}
     public Integer statehouseDistrict {get;set;}
     public Integer statesenateDistrict {get;set;}
+    public String gApiPassthroughErrorMessage {get;set;}
+    public Boolean apiLimitExceeded {get;set;}
 
     public oregonDistricts(String address) {
             system.debug('Address =' + address);    
@@ -28,17 +30,28 @@ public void Results(String address) {
         System.debug(response.getBody());
      
 
-        // Parse JSON response to get all the totalPrice field values.
+        // Parse JSON response.
         JSONParser parser = JSON.createParser(response.getBody());
-        congressionalDistrict = 0;
-		statehouseDistrict = 0;
-		statesenateDistrict = 0;
+        congressionalDistrict = null;
+		statehouseDistrict = null;
+		statesenateDistrict = null;
+        gApiPassthroughErrorMessage = '';
     
         String CD;
     	String HD;
     	String SD;
-        while (parser.nextToken() != null) {
+        while (parser.nextToken() != null && gApiPassthroughErrorMessage != 'dailyLimitExceeded') {
             if ((parser.getCurrentToken() == JSONToken.FIELD_NAME)) {
+                // first check for over API limits error message
+                // skip everything else if over limits
+                if (parser.getText() == 'reason') {
+                    parser.nextToken();
+                    gApiPassthroughErrorMessage = parser.getText();
+                    if (gApiPassthroughErrorMessage = 'dailyLimitExceeded') {
+                        apiLimitExceeded = true;
+                        return;
+                    }
+                }
 				if (parser.getText() == 'congressionaldistrictnum') {
 					// Get the value.
 					parser.nextToken();
@@ -61,7 +74,7 @@ public void Results(String address) {
 					parser.nextToken();
 					 SD = parser.getText();
                     If (SD == null) { statesenateDistrict = 0; }
-                    If (SD != null) {  statesenateDistrict = Integer.valueOf(SD); }
+                    If (SD != null) { statesenateDistrict = Integer.valueOf(SD); }
 				}
             }
         }
