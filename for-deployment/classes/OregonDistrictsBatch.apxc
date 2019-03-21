@@ -5,21 +5,14 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
     
     // errors stored here for passing to user email in finish method
     Exception[] errors = new Exception[0];
+    string stringErrors = '';
     global Boolean apiLimitExceeded = false;
     
     // query requires oregon street address, active wkr w/PIN or CW record,
     // and null in any one of the 4 fields populated by the callout.
     // for now also including records with 0s in all district fields
     // but can remove that once error handling for over API limits is implemented
-    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode '
-        q += 'FROM Contact WHERE MailingStreet != NULL AND '
-        q += 'MailingState=\'OR\' AND '
-        q += '(Active_Worker__c = TRUE AND '
-        q += '(L503_PIN__c <> NULL OR L503_PIN__c > 0) OR '
-        q += 'Has_CareWorks_Record__c = TRUE) AND '
-        q += '(District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL OR '
-        q += '(Cong_District__c  = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
-
+    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND ((Active_Worker__c = TRUE AND L503_PIN__c != NULL) OR Has_CareWorks_Record__c = TRUE) AND (District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL)';
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(q);
@@ -46,7 +39,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
                     c.District_Update_Date__c = system.now();
                } else {
                    apiLimitExceeded = true;
-                   errors.add('API limit exceeded');
+                   stringErrors = 'API limit exceeded';
                    return;
                }
                 
@@ -64,36 +57,41 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
    global void finish(Database.BatchableContext BC){
        System.debug(recordsProcessed + ' records were processed.');
        
-   // Get the ID of the AsyncApexJob representing this batch job
-   // from Database.BatchableContext.
-   // Query the AsyncApexJob object to retrieve the current job's information.
-   AsyncApexJob a = [SELECT Id, Status, NumberOfErrors, JobItemsProcessed,
-      TotalJobItems, CreatedBy.Email
-      FROM AsyncApexJob WHERE Id =
-      :BC.getJobId()];
-   // Send an email to the Apex job's submitter with list of errors, if any.
-   String msg='';
-   for (integer i =0; i<errors.size();i++) {
-        msg +='\n' +'Error: ' + errors[i];
-        }
-   if(!errors.isEmpty()) {
-            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-            mail.setSubject('Errors occurred during batch process.');
-            String[] toAddresses = new String[] {a.CreatedBy.Email};
-            mail.setToAddresses(toAddresses);
-       mail.setPlainTextBody(msg);
-            Messaging.sendEmail(new Messaging.Email[] { mail });
-        }
+       // Get the ID of the AsyncApexJob representing this batch job
+       // from Database.BatchableContext.
+       // Query the AsyncApexJob object to retrieve the current job's information.
+       AsyncApexJob a = [SELECT Id, Status, NumberOfErrors, JobItemsProcessed,
+          TotalJobItems, CreatedBy.Email
+          FROM AsyncApexJob WHERE Id =
+          :BC.getJobId()];
+       
        // Send an email to the Apex job's submitter notifying of job completion.
-   Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-   String[] toAddresses = new String[] {a.CreatedBy.Email};
-   mail.setToAddresses(toAddresses);
-   mail.setSubject('Apex Sharing Recalculation ' + a.Status);
-   mail.setPlainTextBody
-   ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
-   ' batches with '+ a.NumberOfErrors + ' failures.');
-   Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+       String[] toAddresses = new String[] {a.CreatedBy.Email};
+       mail.setToAddresses(toAddresses);
+       mail.setSubject('Apex Sharing Recalculation ' + a.Status);
+       mail.setPlainTextBody
+       ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
+       ' batches with '+ a.NumberOfErrors + ' failures.');
+       Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
     
+   	   executeErrorHandling(BC, toAddresses, errors, stringErrors);
+}
+
+@TestVisible
+private void executeErrorHandling (Database.BatchableContext bc, List<String> emails, Exception[] errors, String stringErrors) {
+    // Send an email to the Apex job's submitter with list of errors, if any.
+    String msg='';
+    for (integer i =0; i<errors.size();i++) {
+        msg +='\n' +'Error: ' + errors[i];
     }
+    if(!errors.isEmpty() || stringErrors != '') {
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        mail.setSubject('Errors occurred during batch process.');
+        mail.setToAddresses(emails);
+        mail.setPlainTextBody(msg);
+        Messaging.sendEmail(new Messaging.Email[] { mail });
+    }
+}
 
 }

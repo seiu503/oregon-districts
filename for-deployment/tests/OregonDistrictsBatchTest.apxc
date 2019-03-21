@@ -7,8 +7,8 @@ private class OregonDistrictsBatchTest {
             contacts.add(new Contact(
                 firstname='first' + i, 
                 lastname='last' + i, 
-                Active_Worker__c=true,
                 accountId='0016100001RyWhAAAV',
+                Has_CareWorks_Record__c = TRUE,
                 MailingStreet='3892 friar ct se',
                 MailingCity='Salem',
                 MailingState='OR',
@@ -16,21 +16,18 @@ private class OregonDistrictsBatchTest {
         }
         insert contacts;
         List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)];
+        System.debug(queriedContacts);
         System.assert(queriedContacts.size() >0);
-
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
         Test.startTest();
         OregonDistrictsBatch odb = new OregonDistrictsBatch();
         Database.executeBatch(odb,10);
         Test.stopTest();
-
         // after the testing stops, assert records were updated properly
         // select first 10 records with a district update date populated
         List<Contact> listContact = [SELECT id, District_Update_Date__c, Cong_District__c, OR_HD__c, OR_SD__c FROM Contact WHERE District_Update_Date__c != NULL LIMIT 10];
-        
         // assert that 10 records were found
         System.assertEquals(listContact.size(),10);   
-
         // assert that each of the targeted fields was populated in each of the 10 test records                                                                                                                                                            
         for(Contact contact : listContact){
           System.assert(contact.Cong_District__c  != null);
@@ -38,16 +35,45 @@ private class OregonDistrictsBatchTest {
           System.assert(contact.OR_SD__c  != null);
         }
     }
-    
     static testmethod void testErrorCondition() { 
+        List<Contact> contacts = new List<Contact>();
+        // insert 10 contacts with unknown employer and test address; these will be guaranteed to meet query criteria for queriedContacts List
+        for (Integer i=0;i<10;i++) {
+            contacts.add(new Contact(
+                firstname='first' + i, 
+                lastname='last' + i, 
+                accountId='0016100001RyWhAAAV',
+                Has_CareWorks_Record__c = TRUE,
+                MailingStreet='3892 friar ct se',
+                MailingCity='Salem',
+                MailingState='OR',
+                MailingPostalCode='97302'));
+        }
+        insert contacts;
+        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)];
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsErrorMock());
         Test.startTest();
         OregonDistrictsBatch odb = new OregonDistrictsBatch();
-        Database.executeBatch(odb,10);
+        odb.execute(null, queriedContacts);
         Test.stopTest();
         // after the testing stops, assert that 'apiLimitExceeded' var is set to true
         // (this test simulates a callout after daily API limits are met)
         System.assertEquals(odb.apiLimitExceeded, true);
+    }
+    
+    static testmethod void testFinish() {
+    	Test.setMock(HttpCalloutMock.class, new OregonDistrictsErrorMock());
+        List <String> emails = new List<String> {'schneiders@seiu503.org'};
+       
+        CalloutException e = (CalloutException)CalloutException.class.newInstance();
+        e.setMessage('Unauthorized endpoint, please check Setup->Security->Remote site settings.');
+        List <Exception> errors = new List<Exception> {e};
+        String stringErrors = 'API limit exceeded';
+        Test.startTest();
+        OregonDistrictsBatch odb = new OregonDistrictsBatch();
+        odb.executeErrorHandling(null, emails, errors, stringErrors);
+        Database.executeBatch(odb,10);
+        Test.stopTest();
     }
     
 }

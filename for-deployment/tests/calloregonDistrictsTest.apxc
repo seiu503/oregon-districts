@@ -7,7 +7,7 @@ private class calloregonDistrictsTest {
             contacts.add(new Contact(
                 firstname='first' + i, 
                 lastname='last' + i, 
-                Active_Worker__c=true,
+                Has_CareWorks_Record__c = TRUE,
                 accountId='0016100001RyWhAAAV',
                 MailingStreet='3892 friar ct se',
                 MailingCity='Salem',

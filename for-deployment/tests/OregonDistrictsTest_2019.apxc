@@ -19,8 +19,8 @@ public class oregonDistrictsTest_2019 {
         oregonDistricts od = new oregonDistricts(address);
         new oregonDistricts(address).Results(address); 
         Test.stopTest();
-        System.assert(od.gApiPassthroughErrorMessage = 'dailyLimitExceeded')
-        System.assertEquals(od.apiLimitExceeded, true)
+        System.assertEquals(od.gApiPassthroughErrorMessage, 'dailyLimitExceeded');
+        System.assertEquals(od.apiLimitExceeded, true);
         System.assertEquals(od.congressionalDistrict, null);
         System.assertEquals(od.statehouseDistrict, null);
         System.assertEquals(od.statesenateDistrict, null);
