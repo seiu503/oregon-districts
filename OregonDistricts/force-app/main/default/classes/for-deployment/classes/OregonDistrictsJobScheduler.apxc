@@ -1,5 +1,5 @@
 global class OregonDistrictsJobScheduler {
-    public static String CRON = '0 25 * * * ?';
+    public static String CRON = '0 55 * * * ?';
     public static void start(){
         String jobId = System.schedule('Oregon Districts Update' +System.now(), CRON, new OregonDistrictsBatchScheduleUpdate());  
     }

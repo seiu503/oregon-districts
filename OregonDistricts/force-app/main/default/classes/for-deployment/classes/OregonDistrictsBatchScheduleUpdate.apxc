@@ -1,0 +1,11 @@
+global class OregonDistrictsBatchScheduleUpdate implements Schedulable {
+	 global void execute(SchedulableContext sc) {
+        // Implement any logic to be scheduled
+       
+        // Call the batch class to be scheduled
+        OregonDistrictsBatch odb = new OregonDistrictsBatch();
+       
+        //Parameters of ExecuteBatch(context,BatchSize)
+        database.executebatch(odb,90);
+    }
+}

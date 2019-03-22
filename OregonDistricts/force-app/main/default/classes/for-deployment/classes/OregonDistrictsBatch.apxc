@@ -12,7 +12,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
     // and null in any one of the 4 fields populated by the callout.
     // for now also including records with 0s in all district fields
     // but can remove that once error handling for over API limits is implemented
-    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND ((Active_Worker__c = TRUE AND L503_PIN__c != NULL) OR Has_CareWorks_Record__c = TRUE) AND (District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL)';
+    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND ((Active_Worker__c = TRUE AND L503_PIN__c != NULL) OR Has_CareWorks_Record__c = TRUE) AND((District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL) OR (Cong_District__c = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(q);
