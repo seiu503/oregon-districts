@@ -1,0 +1,1 @@
+OregonDistrictsTriggerTest, calloregonDistrictsTest, getOregonDistrictsTest, OregonDistrictsBatchScheduleUpdateTest, OregonDistrictsBatchTest, OregonDistrictsJobSchedulerTest, oregonDistrictsTest_2019 

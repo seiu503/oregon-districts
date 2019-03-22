@@ -85,6 +85,7 @@ private void executeErrorHandling (Database.BatchableContext bc, List<String> em
     for (integer i =0; i<errors.size();i++) {
         msg +='\n' +'Error: ' + errors[i];
     }
+    msg += '\n' +'Error: ' + stringErrors;
     if(!errors.isEmpty() || stringErrors != '') {
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setSubject('Errors occurred during batch process.');
