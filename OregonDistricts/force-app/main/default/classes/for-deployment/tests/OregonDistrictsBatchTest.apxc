@@ -15,7 +15,7 @@ private class OregonDistrictsBatchTest {
                 MailingPostalCode='97302'));
         }
         insert contacts;
-        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)];
+        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND District_Update_Date__c = null];
         System.debug(queriedContacts);
         System.assert(queriedContacts.size() >0);
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsMock());
@@ -50,7 +50,7 @@ private class OregonDistrictsBatchTest {
                 MailingPostalCode='97302'));
         }
         insert contacts;
-        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND (District_Update_Date__c = null OR Cong_District__c  = null OR OR_HD__c = null OR OR_SD__c = null)];
+        List<Contact> queriedContacts = [SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM  Contact WHERE MailingStreet != NULL AND District_Update_Date__c = null];
         Test.setMock(HttpCalloutMock.class, new OregonDistrictsErrorMock());
         Test.startTest();
         OregonDistrictsBatch odb = new OregonDistrictsBatch();

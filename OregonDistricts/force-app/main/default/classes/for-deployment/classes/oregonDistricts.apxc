@@ -7,7 +7,7 @@ public class oregonDistricts {
     public Boolean apiLimitExceeded {get;set;}
 
     public oregonDistricts(String address) {
-            system.debug('Address =' + address);    
+         //   system.debug('Address =' + address);    
 			Results(address);
     }
 
@@ -27,8 +27,6 @@ public void Results(String address) {
         // Send the HTTP request and get the response.
         // The response is in JSON format.
         HttpResponse response = httpProtocol.send(request);
-        System.debug(response.getBody());
-     
 
         // Parse JSON response.
         JSONParser parser = JSON.createParser(response.getBody());
@@ -45,9 +43,11 @@ public void Results(String address) {
                 // first check for over API limits error message
                 // skip everything else if over limits
                 if (parser.getText() == 'reason') {
+                    system.debug(parser.getText());
                     parser.nextToken();
                     gApiPassthroughErrorMessage = parser.getText();
-                    if (gApiPassthroughErrorMessage = 'dailyLimitExceeded') {
+                    system.debug(gApiPassthroughErrorMessage);
+                    if (gApiPassthroughErrorMessage == 'dailyLimitExceeded') {
                         apiLimitExceeded = true;
                         return;
                     }
@@ -78,6 +78,6 @@ public void Results(String address) {
 				}
             }
         }
-        system.debug('Address =' + address + ' Congressional  =' + congressionalDistrict + ' State House  =' + statehouseDistrict + ' State Senate  =' + statesenateDistrict);
+     //   system.debug('Address =' + address + ' Congressional  =' + congressionalDistrict + ' State House  =' + statehouseDistrict + ' State Senate  =' + statesenateDistrict);
 	}
 }

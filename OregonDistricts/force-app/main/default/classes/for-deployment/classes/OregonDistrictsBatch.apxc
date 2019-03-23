@@ -9,10 +9,8 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
     global Boolean apiLimitExceeded = false;
     
     // query requires oregon street address, active wkr w/PIN or CW record,
-    // and null in any one of the 4 fields populated by the callout.
-    // for now also including records with 0s in all district fields
-    // but can remove that once error handling for over API limits is implemented
-    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND ((Active_Worker__c = TRUE AND L503_PIN__c != NULL) OR Has_CareWorks_Record__c = TRUE) AND((District_Update_Date__c = NULL OR Cong_District__c = NULL OR OR_HD__c = NULL OR OR_SD__c = NULL) OR (Cong_District__c = 0 AND OR_HD__c = 0 AND OR_SD__c = 0))';
+    // and empty district update date
+    string q = 'SELECT  Id,MailingStreet,MailingCity,MailingState,MailingPostalCode FROM Contact WHERE MailingStreet != NULL AND MailingState=\'OR\' AND District_Update_Date__c = NULL AND ((Active_Worker__c = TRUE AND L503_PIN__c != NULL) OR Has_CareWorks_Record__c = TRUE)';
 
     global Database.QueryLocator start(Database.BatchableContext bc) {
         return Database.getQueryLocator(q);
@@ -28,7 +26,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
                                                               + c.MailingCity + ' ' 
                                                               + c.MailingState + ' ' 
                                                               + c.MailingPostalCode, 'UTF-8');
-                system.Debug('Address =' + address);
+             //   system.Debug('Address =' + address);
                
                oregonDistricts od = new oregonDistricts(address);
 
@@ -55,7 +53,7 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
 
 
    global void finish(Database.BatchableContext BC){
-       System.debug(recordsProcessed + ' records were processed.');
+      // System.debug(recordsProcessed + ' records were processed.');
        
        // Get the ID of the AsyncApexJob representing this batch job
        // from Database.BatchableContext.
@@ -66,14 +64,17 @@ global class OregonDistrictsBatch implements Database.Batchable<sObject>, Databa
           :BC.getJobId()];
        
        // Send an email to the Apex job's submitter notifying of job completion.
-       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+       // uncomment success email for testing / large batches only, 
+       // for scheduled maintenance only send email if errors
+       
+       // Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
        String[] toAddresses = new String[] {a.CreatedBy.Email};
-       mail.setToAddresses(toAddresses);
-       mail.setSubject('Apex Sharing Recalculation ' + a.Status);
-       mail.setPlainTextBody
-       ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
-       ' batches with '+ a.NumberOfErrors + ' failures.');
-       Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+       // mail.setToAddresses(toAddresses);
+       // mail.setSubject('Apex Sharing Recalculation ' + a.Status);
+       // mail.setPlainTextBody
+       // ('The batch OregonDistricts job processed ' + recordsProcessed + ' in '  + a.TotalJobItems +
+       // ' batches with '+ a.NumberOfErrors + ' failures.');
+       // Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
     
    	   executeErrorHandling(BC, toAddresses, errors, stringErrors);
 }
