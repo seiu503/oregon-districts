@@ -1,0 +1,11 @@
+To update code:
+
+1. edit files in sandbox
+2. add to outbound changeset, include test for each updated file in changeset
+3. upload to production
+4. cancel/delete existing scheduled job from Scheduled Apex jobs list (look for job belonging to user Sarah Schneider, named Oregon Districts Update)
+5. validate/deploy inbound changeset
+6. review code in production by opening files in prod dev console and confirm that changes look ok
+7. restart scheduler: Developer Console => Debug => Open Execute Anonymous Window:
+
+OregonDistrictsJobScheduler.start();
