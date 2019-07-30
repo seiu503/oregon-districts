@@ -17,7 +17,7 @@ public void Results(String address) {
         // Create HTTP request to send.
         HttpRequest request = new HttpRequest();
         // Set the endpoint URL.
-		 String endpoint = 'http://portal.opeuseiu.org/processes/google_civic_api_passthrough.php'
+		 String endpoint = 'https://web.opeuseiu.org/google_civic_api_passthrough.php'
 			+'?secretkey=WckiMNSfVZuFIprzcMpDbcKEMcWDOcIm'
             + '&address=' + address;
 

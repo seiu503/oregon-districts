@@ -1,0 +1,26 @@
+System.abortJob('70729000011aj7h');
+
+
+select Id, CronExpression, TimesTriggered, NextFireTime, State from CronTrigger WHERE CronJobDetail.Name ='getOregonDistricts' AND State != 'DELETED'
+
+70729000011aj7h
+
+
+// loop through jobs located by name that we need to abort
+for(CronTrigger ct : [SELECT Id, CronJobDetail.Name, CronJobDetail.JobType FROM CronTrigger WHERE CronJobDetail.Name like 'Oregon Districts Update'])
+{
+  // abort the job, try/catch because the job might not exist
+    try
+    {
+        System.debug(ct.id);
+        system.abortJob(ct.id);
+    }
+    catch (exception e) {System.debug(e);}
+}
+
+
+select Id, CronJobDetail.Name, CronJobDetail.JobType, State from CronTrigger WHERE CronJobDetail.Name like 'Oregon Districts Update'
+
+
+08e2900000J280nAAB
+System.abortJob('08e2900000J280nAAB');
