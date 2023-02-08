@@ -3,9 +3,22 @@ To update code:
 1. edit files in sandbox
 2. add to outbound changeset, include test for each updated file in changeset
 3. upload to production
-4. cancel/delete existing scheduled job from Scheduled Apex jobs list (look for job belonging to user Sarah Schneider, named Oregon Districts Update)
+4. cancel/delete existing scheduled job from Scheduled Apex jobs list (look for job belonging to user Sarah Schneider, named Oregon Districts Update) [THIS WAS DELETED 2/8/2023 AFTER SERVER FAILED]
 5. validate/deploy inbound changeset
 6. review code in production by opening files in prod dev console and confirm that changes look ok
 7. restart scheduler: Developer Console => Debug => Open Execute Anonymous Window:
 
 OregonDistrictsJobScheduler.start();
+
+
+
+**First week of Feb 2023: 
+deactivated Apex Trigger (OregonDistricts)
+commented out code in OregonDistrictsJobScheduler
+deleted Scheduled Job Oregon Districts Update
+
+to reactivate:
+reactivate Apex Trigger in sandbox
+uncomment code in OregonDistrictsScheduler
+deploy to production
+restart scheduler following instructions above
