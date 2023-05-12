@@ -5,39 +5,35 @@ public class oregonDistricts {
     public Integer statesenateDistrict {get;set;}
     public String gApiPassthroughErrorMessage {get;set;}
     public Boolean apiLimitExceeded {get;set;}
-
     public oregonDistricts(String address) {
          //   system.debug('Address =' + address);    
-			Results(address);
+            Results(address);
     }
-
 public void Results(String address) {
       
         Http httpProtocol = new Http();
         // Create HTTP request to send.
         HttpRequest request = new HttpRequest();
         // Set the endpoint URL.
-		 String endpoint = 'https://web.opeuseiu.org/google_civic_api_passthrough.php'
-			+'?secretkey=WckiMNSfVZuFIprzcMpDbcKEMcWDOcIm'
+         String endpoint = 'https://oregondistricts.azurewebsites.net/google_civic_api_passthrough.php'
+            +'?secretkey=Yke7iOpY82T4j0h9IopWe5lcn3lMncVx'
             + '&address=' + address;
-
         request.setEndPoint(endpoint);
         // Set the HTTP verb to GET.
         request.setMethod('GET');
         // Send the HTTP request and get the response.
         // The response is in JSON format.
         HttpResponse response = httpProtocol.send(request);
-
         // Parse JSON response.
         JSONParser parser = JSON.createParser(response.getBody());
         congressionalDistrict = null;
-		statehouseDistrict = null;
-		statesenateDistrict = null;
+        statehouseDistrict = null;
+        statesenateDistrict = null;
         gApiPassthroughErrorMessage = '';
     
         String CD;
-    	String HD;
-    	String SD;
+        String HD;
+        String SD;
         while (parser.nextToken() != null && gApiPassthroughErrorMessage != 'dailyLimitExceeded') {
             if ((parser.getCurrentToken() == JSONToken.FIELD_NAME)) {
                 // first check for over API limits error message
@@ -52,32 +48,32 @@ public void Results(String address) {
                         return;
                     }
                 }
-				if (parser.getText() == 'congressionaldistrictnum') {
-					// Get the value.
-					parser.nextToken();
-					CD = parser.getText();
+                if (parser.getText() == 'congressionaldistrictnum') {
+                    // Get the value.
+                    parser.nextToken();
+                    CD = parser.getText();
                     If (CD == null) { congressionalDistrict = 0; }
-                 	If (CD != null) { congressionalDistrict = Integer.valueOf(CD); }
+                    If (CD != null) { congressionalDistrict = Integer.valueOf(CD); }
                     
-				}
-			 if (parser.getText() == 'statehousedistrictnum') {
-					// Get the value.
-					parser.nextToken();
-					HD = parser.getText();
+                }
+             if (parser.getText() == 'statehousedistrictnum') {
+                    // Get the value.
+                    parser.nextToken();
+                    HD = parser.getText();
                  If (HD == null) { statehouseDistrict = 0; }
                  If (HD != null)
                  {  statehouseDistrict = Integer.valueOf(HD); }
                      
-				}
-			   if (parser.getText() == 'statesenatedistrictnum') {
-					// Get the value.
-					parser.nextToken();
-					 SD = parser.getText();
+                }
+               if (parser.getText() == 'statesenatedistrictnum') {
+                    // Get the value.
+                    parser.nextToken();
+                     SD = parser.getText();
                     If (SD == null) { statesenateDistrict = 0; }
                     If (SD != null) { statesenateDistrict = Integer.valueOf(SD); }
-				}
+                }
             }
         }
      //   system.debug('Address =' + address + ' Congressional  =' + congressionalDistrict + ' State House  =' + statehouseDistrict + ' State Senate  =' + statesenateDistrict);
-	}
+    }
 }
